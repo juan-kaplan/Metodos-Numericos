@@ -1,8 +1,8 @@
 import numpy as np
-import numpy
 from scipy.interpolate import lagrange, CubicSpline
 import matplotlib.pyplot as plt
 from scipy.misc import derivative
+from mpl_toolkits.mplot3d import Axes3D
 
 def get_x_points2(f):
     k = np.arange(1, 5+1)
@@ -74,8 +74,8 @@ create_line_graph(axs[0], x_points, y_points, [(x_interval, y_original, "func or
 axs[0].set_title("Interpolacion equiespaciada")
 
 # Unevenly spaced points
-# x_points2 = np.flip(chebyshev_nodes(-3, 3, 15))
-x_points2 = np.array(get_x_points2(my_function))
+x_points2 = np.flip(chebyshev_nodes(-3, 3, 10))
+# x_points2 = np.array(get_x_points2(my_function))
 y_points2 = my_function(x_points2)
 
 x2 = np.array(x_points2)
@@ -101,5 +101,37 @@ create_error_graph(axs[2], [(x_interval, error_lagrange1, "Lagrange equispaciado
 axs[2].set_title("Error de polinomios")
 
 plt.tight_layout()
-axs[2].set_ylim(0.5, 3.5)
+#axs[2].set_ylim(0.5, 3.5)
+plt.show()
+
+# 3D Graph 
+def f2(x1, x2):
+    term1 = 0.7 * np.exp(-((9*x1 - 2)**2)/4 - ((9*x2 - 2)**2)/4)
+    term2 = 0.45 * np.exp(-((9*x1 + 1)**2)/9 - ((9*x2 + 1)**2)/5)
+    term3 = 0.55 * np.exp(-((9*x1 - 6)**2)/4 - ((9*x2 - 3)**2)/4)
+    term4 = -0.01 * np.exp(-((9*x1 - 7)**2)/4 - ((9*x2 - 3)**2)/4)
+    
+    return term1 + term2 + term3 + term4
+
+# Create a meshgrid for x1 and x2
+x1_vals = np.linspace(-1, 1, 100)
+x2_vals = np.linspace(-1, 1, 100)
+x1_mesh, x2_mesh = np.meshgrid(x1_vals, x2_vals)
+
+# Calculate function values for each combination of x1 and x2
+f_values = np.array([[f2(x1, x2) for x1 in x1_vals] for x2 in x2_vals])
+
+# Create a 3D plot
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+
+# Plot the surface
+ax.plot_surface(x1_mesh, x2_mesh, f_values, cmap='viridis')
+
+# Add labels and title
+ax.set_xlabel('x1')
+ax.set_ylabel('x2')
+ax.set_zlabel('f2(x1, x2)')
+ax.set_title('Plot of f2(x1, x2)')
+
 plt.show()
