@@ -1,8 +1,9 @@
 import numpy as np
-from scipy.interpolate import lagrange, CubicSpline
+from scipy.interpolate import lagrange, CubicSpline, RectBivariateSpline
 import matplotlib.pyplot as plt
 from scipy.misc import derivative
 from mpl_toolkits.mplot3d import Axes3D
+from scipy.interpolate import griddata
 
 def get_x_points2(f):
     k = np.arange(1, 5+1)
@@ -104,7 +105,8 @@ plt.tight_layout()
 #axs[2].set_ylim(0.5, 3.5)
 plt.show()
 
-# 3D Graph 
+#3D Function
+# Define the function f2(x1, x2)
 def f2(x1, x2):
     term1 = 0.7 * np.exp(-((9*x1 - 2)**2)/4 - ((9*x2 - 2)**2)/4)
     term2 = 0.45 * np.exp(-((9*x1 + 1)**2)/9 - ((9*x2 + 1)**2)/5)
@@ -121,17 +123,40 @@ x1_mesh, x2_mesh = np.meshgrid(x1_vals, x2_vals)
 # Calculate function values for each combination of x1 and x2
 f_values = np.array([[f2(x1, x2) for x1 in x1_vals] for x2 in x2_vals])
 
-# Create a 3D plot
-fig = plt.figure()
-ax = fig.add_subplot(111, projection='3d')
+# Perform cubic spline interpolation with 10 points for each variable
+x1_interp = np.linspace(-1, 1, 20)
+x2_interp = np.linspace(-1, 1, 20)
 
-# Plot the surface
-ax.plot_surface(x1_mesh, x2_mesh, f_values, cmap='viridis')
+# Create a grid for interpolation
+X_interp, Y_interp = np.meshgrid(x1_interp, x2_interp)
 
-# Add labels and title
-ax.set_xlabel('x1')
-ax.set_ylabel('x2')
-ax.set_zlabel('f2(x1, x2)')
-ax.set_title('Plot of f2(x1, x2)')
+# Calculate function values for the interpolation grid
+f_values_interp = np.array([[f2(x1, x2) for x1 in x1_interp] for x2 in x2_interp])
 
+# Create a bivariate spline for the interpolated function
+spline = RectBivariateSpline(x1_interp, x2_interp, f_values_interp)
+
+# Evaluate the spline on the interpolation grid
+Z_interp = spline(x1_interp, x2_interp)
+
+# Create subplots
+fig, axs = plt.subplots(1, 2, figsize=(12, 5), subplot_kw={'projection': '3d'})
+
+# Plot the surface of the original function
+axs[0].plot_surface(x1_mesh, x2_mesh, f_values, cmap='viridis')
+axs[0].set_xlabel('x1')
+axs[0].set_ylabel('x2')
+axs[0].set_zlabel('f2(x1, x2)')
+axs[0].set_title('Original Function f2(x1, x2)')
+
+# Plot the surface of the interpolated function
+axs[1].plot_surface(X_interp, Y_interp, Z_interp, cmap='viridis')
+axs[1].set_xlabel('x1')
+axs[1].set_ylabel('x2')
+axs[1].set_zlabel('f2(x1, x2)')
+axs[1].set_title('Interpolated Function with RectBivariateSpline')
+
+plt.tight_layout()
 plt.show()
+
+
