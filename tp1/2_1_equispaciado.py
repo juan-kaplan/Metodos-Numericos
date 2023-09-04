@@ -5,25 +5,13 @@ from scipy.misc import derivative
 from mpl_toolkits.mplot3d import Axes3D
 from scipy.interpolate import griddata
 
-def get_x_points2(f):
-    k = np.arange(1, 5+1)
-    nodes = 0.5 * (-3 + 3) + 0.5 * (3 - -3) * np.cos((2 * k - 1) * np.pi / (2 * 5))
-    nodes_purged = nodes[np.abs(nodes) > 1]
-    x_points = [-1]
-    x = -1
-    while x <= 1:
-        if np.sign(derivative(f, x, dx=1e-6)) != np.sign(derivative(f, x + 0.001, dx=1e-6)):
-            x_points.append(x)
-        x += 0.001
-    x_points.append(1)
-    x_points.extend(nodes_purged)
-    x_points.sort()
-    return x_points 
-
 def chebyshev_nodes(a, b, n):
     k = np.arange(1, n+1)
     nodes = 0.5 * (a + b) + 0.5 * (b - a) * np.cos((2 * k - 1) * np.pi / (2 * n))
     return nodes
+
+def calculate_mass_error(y_original, y_interpolated):
+    return sum(np.abs(y_original[::2] - y_interpolated[::2]))
 
 def my_function(x):
     return 0.05 ** np.abs(x) * np.sin(5 * x) + np.tanh(2 * x) + 2
@@ -48,9 +36,10 @@ def create_error_graph(axs, functions, title=""):
     axs.grid(True)
     return axs
 
-
 # Points with x space between them
-x_points = np.array([-3, -2.4, -1.8, -1.2, -0.6, 0, 0.6, 1.2, 1.8, 2.4, 3.0])
+
+#Graph with 10 nodes
+x_points = np.linspace(-3, 3, 13)
 y_points = my_function(x_points)
 
 # Compute the Interpolation polynomial
@@ -76,7 +65,6 @@ axs[0].set_title("Interpolacion equiespaciada")
 
 # Unevenly spaced points
 x_points2 = np.flip(chebyshev_nodes(-3, 3, 10))
-# x_points2 = np.array(get_x_points2(my_function))
 y_points2 = my_function(x_points2)
 
 x2 = np.array(x_points2)
@@ -102,8 +90,38 @@ create_error_graph(axs[2], [(x_interval, error_lagrange1, "Lagrange equispaciado
 axs[2].set_title("Error de polinomios")
 
 plt.tight_layout()
-#axs[2].set_ylim(0.5, 3.5)
 plt.show()
+
+# Calculate error with different number of nodes
+def calculate_error_graph_nodes(a, b):
+    fig, axs = plt.subplots()
+    nodes_error_lagrange = {}
+    nodes_error_splines = {}
+
+    for i in range(a, b + 1):
+        x_points = np.linspace(-3, 3, i)
+        y_points = my_function(x_points)
+        x_interval = np.arange(-3, 3.05, 0.05)
+        poly_lagrange = lagrange(x_points, y_points)
+        poly_spline = CubicSpline(x_points, y_points)
+
+        y_interp_lagrange = poly_lagrange(x_interval)
+        y_interp_splines = poly_spline(x_interval)
+
+        nodes_error_lagrange[i] = calculate_mass_error(y_original, y_interp_lagrange)
+        nodes_error_splines[i] = calculate_mass_error(y_original, y_interp_splines)
+
+    print(nodes_error_lagrange)
+    axs.plot(list(nodes_error_lagrange.keys()), nodes_error_lagrange.values(), "-", label = "Error Lagrange")
+    axs.plot(list(nodes_error_splines.keys()), nodes_error_splines.values(), "-", label = "Error Splines")
+    axs.set_xlabel('Nodes')
+    axs.set_ylabel('Mass error')
+    axs.set_title("Mass error for different nodes")
+    axs.legend()
+
+    return axs
+
+error_graph_x_space = calculate_error_graph_nodes(5, 13)
 
 #3D Function
 # Define the function f2(x1, x2)
