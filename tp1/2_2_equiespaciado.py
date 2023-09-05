@@ -1,5 +1,3 @@
-# Combining all the elements into a single Python script
-
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.interpolate import RectBivariateSpline
@@ -14,22 +12,22 @@ def f2(x1, x2):
     term4 = -0.01 * np.exp(-((9*x1 - 7)**2)/4 - ((9*x2 - 3)**2)/4)
     return term1 + term2 + term3 + term4
 
-# Create Chebyshev nodes and sort them
+# Create evenly spaced nodes
 n = 9
-x1_vals = np.sort(np.cos(np.pi * (2*np.arange(0, n+1) + 1) / (2*(n+1))))
-x2_vals = np.sort(np.cos(np.pi * (2*np.arange(0, n+1) + 1) / (2*(n+1))))
+x1_vals = np.linspace(-1, 1, n+1)
+x2_vals = np.linspace(-1, 1, n+1)
 
-# Calculate function values and sort them
+# Calculate function values
 f_values = np.array([[f2(x1, x2) for x1 in x1_vals] for x2 in x2_vals])
 
 # Compute Lagrange basis polynomials
 basis_x1 = [Polynomial.fromroots(np.delete(x1_vals, i)) for i in range(n+1)]
 basis_x2 = [Polynomial.fromroots(np.delete(x2_vals, i)) for i in range(n+1)]
 
-# Normalize basis polynomials so they satisfy the Kronecker delta property
-for i, p in enumerate(basis_x1):
-    basis_x1[i] = p / p(x1_vals[i])
-    basis_x2[i] = p / p(x2_vals[i])
+# Normalize basis polynomials
+for i in range(n+1):
+    basis_x1[i] /= basis_x1[i](x1_vals[i])
+    basis_x2[i] /= basis_x2[i](x2_vals[i])
 
 # Evaluate the 2D interpolant at the fine grid
 x1_fine = np.linspace(-1, 1, 100)
@@ -63,14 +61,14 @@ axs[1].plot_surface(X_fine, Y_fine, Z_fine, cmap='viridis')
 axs[1].set_xlabel('x1')
 axs[1].set_ylabel('x2')
 axs[1].set_zlabel('f2(x1, x2)')
-axs[1].set_title('2D Lagrange Interpolated Function with Chebyshev Nodes')
+axs[1].set_title('2D Lagrange Interpolated Function with Evenly Spaced Nodes')
 
 # Plot the surface of the cubic spline interpolated function
 axs[2].plot_surface(X_fine, Y_fine, Z_fine_spline, cmap='viridis')
 axs[2].set_xlabel('x1')
 axs[2].set_ylabel('x2')
 axs[2].set_zlabel('f2(x1, x2)')
-axs[2].set_title('Cubic Spline Interpolated Function with Chebyshev Nodes')
+axs[2].set_title('Cubic Spline Interpolated Function with Evenly Spaced Nodes')
 
 plt.tight_layout()
 plt.show()
