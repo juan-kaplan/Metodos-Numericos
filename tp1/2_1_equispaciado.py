@@ -9,7 +9,7 @@ def chebyshev_nodes(a, b, n):
     return nodes[::-1]
 
 def calculate_mass_error(y_original, y_interpolated):
-    return sum(np.abs(y_original[::2] - y_interpolated[::2]))
+    return sum(np.abs(y_original - y_interpolated))
 
 def my_function(x):
     return 0.05 ** np.abs(x) * np.sin(5 * x) + np.tanh(2 * x) + 2
@@ -110,10 +110,17 @@ def calculate_error_graph_nodes(a, b, node_function, title):
     axs.set_ylabel('Mass error')
     axs.set_title(title)
     axs.legend()
+    axs.set_yscale('log')
+
+    y_ticks = [1, 10, 100]  # Adjust these values as needed within your range
+    y_tick_labels = ['1', '10', '100']
+
+    axs.set_yticks(y_ticks)
+    axs.set_yticklabels(y_tick_labels)
 
     return axs
 
-error_graph_x_space = calculate_error_graph_nodes(5, 13, np.linspace, "Mass error X spaced Nodes")
-error_graph_chebyshev = calculate_error_graph_nodes(5, 13, chebyshev_nodes, "Mass error Chebyshev nodes")
+error_graph_x_space = calculate_error_graph_nodes(5, 20, np.linspace, "Mass error X spaced Nodes")
+error_graph_chebyshev = calculate_error_graph_nodes(5, 20, chebyshev_nodes, "Mass error Chebyshev nodes")
 
 plt.show()
