@@ -70,5 +70,12 @@ axs[2].set_ylabel('x2')
 axs[2].set_zlabel('f2(x1, x2)')
 axs[2].set_title('Cubic Spline Interpolated Function with Evenly Spaced Nodes')
 
+#Find max error:
+f2_fine = np.array([[f2(x1, x2) for x1 in x1_fine] for x2 in x2_fine])
+
+# Find and print the maximum difference
+print("Lagrange:", np.max(np.abs(f2_fine - Z_fine)), "Splines:", np.max(np.abs(f2_fine - Z_fine_spline)))
+
+
 plt.tight_layout()
 plt.show()

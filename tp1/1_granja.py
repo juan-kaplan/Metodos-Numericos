@@ -1,7 +1,7 @@
 import csv
 import matplotlib.pyplot as plt
 from scipy.interpolate import CubicSpline
-from scipy.optimize import newton
+from scipy.optimize import fixed_point
 import numpy as np
 
 mediciones_file = "mnyo_mediciones.csv"
@@ -54,8 +54,6 @@ fig, axs = plt.subplots(figsize=(10, 8))
 plt.plot(x1_data, x2_data, "o", label="Data Points")
 plt.plot(x1_groundtruth, x2_groundtruth, "-", label="Ground Truth")
 plt.plot(x1_interp_data, x2_interp_data, "-", label="Interpolated function")
-plt.xlabel("X1")
-plt.ylabel("X2")
 
 axs.axvline(x=10, color="red", linestyle="-", label="x1 = 10")
 x1_line = np.linspace(min(x1_data), max(x1_data), 100)
@@ -70,39 +68,59 @@ plt.legend()
 plt.grid(True)
 
 # Busqueda de intersecciones
-
-def first_intersection_poly(t):
+def x10_intersection_poly(t):
     return (x1_interpolated(t) - 10)
 
-def second_intersection_poly(t):
-    x1_value = x1_interpolated(t)
-    return x2_interpolated(t) + (- 0.35 * x1_value) + 3.6
+def linear_intersection(t):
+    return x2_interpolated(t) + 0.35 * x1_interpolated(t) - 3.6
 
-def second_derivative(t):
-    x1_derivative = x1_interpolated.derivative()
-    x2_derivative = x2_interpolated.derivative()
+def linear_intersection_deriv(t):
+    return 0.35 * x1_interpolated.derivative()(t) + x2_interpolated.derivative()(t)
 
-    return x1_derivative(t) + 0.35 * x2_derivative(t)
-
-def newtonRaphson(func, derivFunc, x, s): 
-    for m in range(s):
-        h = func(x) / derivFunc(x) 
-        if(derivFunc(x) !=0 and abs(h) >= 0.0001):
-            x = x - h 
-        elif(abs(h) <= 0.0001):
-            break;
+def newtonRaphson(func, derivFunc, x, epsilon):
+    iterations = [x]
+    h = func(x) / derivFunc(x)
+    while abs(h) >= epsilon:
+        h = func(x)/derivFunc(x)
+        pre_x = x
+        x = x - h
+        iterations += [abs(pre_x - x)]
     
-    return x
+    return x, iterations
 
-t_intersection_value1 = newtonRaphson(first_intersection_poly, x1_interpolated.derivative(), 9, 100)
-#t_intersection_value2 = newton(func = second_intersection_poly, fprime= second_derivative,x0= 2, tol= 0.001)
+t_intersection_value1, iterations_1 = newtonRaphson(x10_intersection_poly, x1_interpolated.derivative(), 3, 0.001)
+t_intersection_value2, iterations_2 = newtonRaphson(linear_intersection, linear_intersection_deriv, 0, 0.001)
+t_intersection_value3, iterations_3 = newtonRaphson(linear_intersection, linear_intersection_deriv, 1, 0.001)
+t_intersection_value4, iterations_4 = newtonRaphson(linear_intersection, linear_intersection_deriv, 2, 0.001)
 
-print(x1_interpolated(t_intersection_value1))
+print(t_intersection_value2)
+x1_intersections = [x1_interpolated(t_intersection_value1), x1_interpolated(t_intersection_value2), x1_interpolated(t_intersection_value3), x1_interpolated(t_intersection_value4)]
+x2_intersections = [x2_interpolated(t_intersection_value1), x2_interpolated(t_intersection_value2), x2_interpolated(t_intersection_value3), x2_interpolated(t_intersection_value4)]
+plt.plot(x1_intersections, x2_intersections, "o", label = "Intersection")
 
-x1_intersections = [x1_interpolated(t_intersection_value1), x1_interpolated(t_intersection_value1)]
-x2_intersections = [x2_interpolated(t_intersection_value1), x2_interpolated(t_intersection_value1)]
-plt.plot(x1_interpolated(t_intersection_value1), x2_interpolated(t_intersection_value1), "o", label = "Intersection")
+plt.legend()
+plt.show()
 
-plt.plot(x1_interpolated(t_intersection_value1), x2_interpolated(t_intersection_value1), "o", label = "Intersection")
+# Create a subplot for the Newton-Raphson convergence plot
+fig, axs_convergence = plt.subplots(figsize=(10, 6))
+plt.title("Newton-Raphson Convergence")
 
+# Plot convergence for iteration 1
+axs_convergence.plot(range(len(iterations_1)), iterations_1, label="Iteration 1", marker='o')
+
+# Plot convergence for iteration 2
+axs_convergence.plot(range(len(iterations_2)), iterations_2, label="Iteration 2", marker='o')
+
+# Plot convergence for iteration 3
+axs_convergence.plot(range(len(iterations_3)), iterations_3, label="Iteration 3", marker='o')
+
+# Plot convergence for iteration 4
+axs_convergence.plot(range(len(iterations_4)), iterations_4, label="Iteration 4", marker='o')
+
+axs_convergence.set(xlabel="Iteration", ylabel="Pn - Pn-1")
+
+# Add legend
+plt.legend()
+
+# Show the convergence plot
 plt.show()
