@@ -79,3 +79,59 @@ print("Lagrange:", np.max(np.abs(f2_fine - Z_fine)), "Splines:", np.max(np.abs(f
 
 plt.tight_layout()
 plt.show()
+
+# Function to compute mass error
+def calculate_mass_error(fine, interp):
+    return np.sum(np.abs(fine - interp))
+
+# Create an empty dictionary to store mass errors
+mass_errors_lagrange = {}
+mass_errors_spline = {}
+
+# Loop through the specified node counts
+for n in range(5, 21):  # 5x5, 6x6, ..., 20x20
+    x1_vals = np.linspace(-1, 1, n)
+    x2_vals = np.linspace(-1, 1, n)
+    
+    f_values = np.array([[f2(x1, x2) for x1 in x1_vals] for x2 in x2_vals])
+    
+    # Lagrange Interpolation
+    basis_x1 = [Polynomial.fromroots(np.delete(x1_vals, i)) for i in range(n)]
+    basis_x2 = [Polynomial.fromroots(np.delete(x2_vals, i)) for i in range(n)]
+    
+    for i in range(n):
+        basis_x1[i] /= basis_x1[i](x1_vals[i])
+        basis_x2[i] /= basis_x2[i](x2_vals[i])
+    
+    x1_fine = np.linspace(-1, 1, 100)
+    x2_fine = np.linspace(-1, 1, 100)
+    X_fine, Y_fine = np.meshgrid(x1_fine, x2_fine)
+    
+    Z_fine = np.zeros_like(X_fine)
+    
+    for i in range(n):
+        for j in range(n):
+            Z_fine += f_values[j, i] * np.outer(basis_x2[j](x2_fine), basis_x1[i](x1_fine))
+            
+    # Cubic Spline Interpolation
+    spline = RectBivariateSpline(x1_vals, x2_vals, f_values)
+    Z_fine_spline = spline(x1_fine, x2_fine)
+    
+    # Original function values
+    f2_fine = np.array([[f2(x1, x2) for x1 in x1_fine] for x2 in x2_fine])
+    
+    # Calculate mass error
+    mass_errors_lagrange[n] = calculate_mass_error(f2_fine, Z_fine)
+    mass_errors_spline[n] = calculate_mass_error(f2_fine, Z_fine_spline)
+
+# Plotting
+fig, axs = plt.subplots()
+axs.plot(list(mass_errors_lagrange.keys()), list(mass_errors_lagrange.values()), label='Lagrange')
+axs.plot(list(mass_errors_spline.keys()), list(mass_errors_spline.values()), label='Cubic Spline')
+axs.set_xlabel('Node Count (NxN)')
+axs.set_ylabel('Mass Error')
+axs.set_title('Mass Error vs Node Count')
+axs.legend()
+axs.set_yscale('log')
+
+plt.show()

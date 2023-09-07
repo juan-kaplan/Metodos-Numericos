@@ -124,3 +124,4 @@ error_graph_x_space = calculate_error_graph_nodes(5, 20, np.linspace, "Mass erro
 error_graph_chebyshev = calculate_error_graph_nodes(5, 20, chebyshev_nodes, "Mass error Chebyshev nodes")
 
 plt.show()
+
