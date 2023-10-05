@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.interpolate import lagrange, CubicSpline
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
+
 
 def chebyshev_nodes(a, b, n):
     k = np.arange(1, n+1)
@@ -29,7 +29,7 @@ def create_error_graph(axs, functions, title=""):
         axs.plot(function[0], function[1], '-', label= function[2])
 
     axs.set_xlabel('X')
-    axs.set_ylabel('Y')
+    axs.set_ylabel('Abs error')
     axs.legend()
     axs.grid(True)
     return axs
@@ -112,7 +112,7 @@ def calculate_error_graph_nodes(a, b, node_function, title):
     axs.legend()
     axs.set_yscale('log')
 
-    y_ticks = [1, 10, 100]  # Adjust these values as needed within your range
+    y_ticks = [1, 10, 100]  
     y_tick_labels = ['1', '10', '100']
 
     axs.set_yticks(y_ticks)
