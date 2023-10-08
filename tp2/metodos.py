@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 def pendulo(y, g, l):
     return -(g / l) * np.sin(y)
 
+
 def euler_method(a, b, y0, y_diff0, N):
     h = (b - a) / N
     t = a
@@ -25,7 +26,8 @@ a = 0.0  # Initial time
 b = 15.0  # Final time
 y0 = 0.1  # Initial angular displacement (45 degrees)
 y_diff0 = 0.0  # Initial angular velocity (rad/s)
-N = 1000  # Number of time steps
+N = 15000
+# Number of time steps
 
 # Use Euler's method to solve the equation
 result = euler_method(a, b, y0, y_diff0, N)
@@ -71,8 +73,10 @@ plt.show()
 
 #Runge Kutta
 
-def function_vec(θ, θ_dot):
-    return np.array([pendulo(θ, g, l), θ_dot])
+# def function_vec(θ):
+#     return np.array([pendulo(θ[0], g, l), θ[1]])
+def function_vec(θ):
+    return np.array([θ[1], pendulo(θ[0], g, l)])
 
 def rungekutta(θ, h):
     k1 = h * function_vec(θ)
@@ -89,7 +93,7 @@ h = (b - a) / N  # Step size
 
 for _ in range(N):
     result_rk.append((a, theta[0], theta[1]))
-    theta = rungekutta(theta[0], theta[1], h)
+    theta = rungekutta(theta, h)
     a += h
 
 # Extract time and angular displacement data for plotting
@@ -135,3 +139,7 @@ plt.show()
 
 
 
+
+
+# runge kutta nos cago y hacia que se pierda mas energia a medida que hay menos pasos. Cuando pusimos 500 pasos, pensamos que era suficiente
+# pero vimos que la energia total. EXACTAMENTE en 6069 nodos (a lo largo de 15s) el sistema empieza a ser estable con y0 = 0.1

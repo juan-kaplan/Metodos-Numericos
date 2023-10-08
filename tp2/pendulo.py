@@ -12,14 +12,14 @@ def model(y, t, g, l):
 # Parametros
 g = 9.81  # Acceleration due to gravity (m/s^2)
 l = 1.0   # Length of the pendulum (m)
-theta0 = np.pi / 4  # Initial angular displacement (45 degrees)
+theta0 = 0.1  # Initial angular displacement (45 degrees)
 theta_prime0 = 0.0  # Initial angular velocity (rad/s)
 
 # Tiempo
 t = np.linspace(0, 20, 1001)
 
 # Condiciones Iniciales
-initial_conditions = [theta_prime0, -g / l * theta0]
+initial_conditions = [theta0, theta_prime0]
 
 # Resolviendo con odeint
 solution = odeint(model, initial_conditions, t, args=(g, l))
